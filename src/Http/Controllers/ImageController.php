@@ -101,11 +101,19 @@ class ImageController extends Controller
             // Validate inputs
             $this->validateFilename($filename);
             $this->validateMaxSize($maxSize);
-            $this->validateCoords($coords);
+            $coords = $this->validateCoords($coords);
             $this->validateRatio($ratio);
 
             // Convert maxSize to integer if provided
             $maxSizeInt = $maxSize !== null ? (int) $maxSize : null;
+            
+            // Log the validated parameters
+            Log::debug("Processing crop with validated parameters", [
+                'filename' => $filename,
+                'maxSize' => $maxSizeInt,
+                'coords' => $coords,
+                'ratio' => $ratio
+            ]);
 
             // Get the cached image
             $cachedImagePath = $this->imageCache->getCachedImage('crop', $filename, [
@@ -178,7 +186,7 @@ class ImageController extends Controller
             $this->validateFilename($filename);
             $this->validateMaxDimension($maxWidth, 'maxWidth');
             $this->validateMaxDimension($maxHeight, 'maxHeight');
-            $this->validateCoords($coords);
+            $coords = $this->validateCoords($coords);
             $this->validateRatio($ratio);
 
             // Convert dimensions to integers if provided
@@ -461,25 +469,40 @@ class ImageController extends Controller
     }
 
     /**
-     * Validate the coordinates.
+     * Validate crop coordinates
      *
-     * @param string|null $coords The coordinates to validate
-     * @return bool True if the coordinates are valid
-     * @throws InvalidArgumentException When coordinates are invalid
+     * @param string|null $coords
+     * @return string|null The validated coordinates
+     * @throws InvalidArgumentException
      */
-    protected function validateCoords(?string $coords): bool
+    protected function validateCoords(?string $coords): ?string
     {
-        // If coords is null, it's valid
         if ($coords === null) {
-            return true;
+            return null;
         }
 
-        // Check if coords match the expected format (x,y,width,height)
+        // Check if the coordinates are in the correct format (x,y,width,height)
         if (!preg_match('/^\d+,\d+,\d+,\d+$/', $coords)) {
-            throw new InvalidArgumentException("Coordinates must be in format: x,y,width,height");
+            throw new InvalidArgumentException("Invalid coordinates format. Expected format: x,y,width,height");
         }
 
-        return true;
+        // Parse coordinates to ensure width and height are not zero
+        list($x, $y, $width, $height) = explode(',', $coords);
+        
+        if ((int)$width <= 0 || (int)$height <= 0) {
+            Log::warning("Invalid crop dimensions detected, adjusting to minimum values", [
+                'original_coords' => $coords
+            ]);
+            
+            // Adjust width and height to minimum of 1 pixel
+            $width = max(1, (int)$width);
+            $height = max(1, (int)$height);
+            
+            // Update the coordinates
+            $coords = "{$x},{$y},{$width},{$height}";
+        }
+        
+        return $coords;
     }
 
     /**
