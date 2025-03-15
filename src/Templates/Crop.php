@@ -244,17 +244,27 @@ class Crop implements ModifierInterface
 	 */
 	protected function scaleImage(ImageInterface $image): ImageInterface
 	{
+		// If maxSize is provided, it should constrain the largest dimension
+		if ($this->maxSize) {
+			$width = $image->width();
+			$height = $image->height();
+			
+			// Determine which dimension is larger and constrain it
+			if ($width >= $height) {
+				return $image->scaleDown(width: $this->maxSize);
+			} else {
+				return $image->scaleDown(height: $this->maxSize);
+			}
+		}
+		
+		// If specific dimensions are provided, use them based on orientation
 		if ($this->orientation === 'landscape') {
 			if ($this->maxWidth) {
 				return $image->scaleDown(width: $this->maxWidth);
-			} elseif ($this->maxSize) {
-				return $image->scaleDown(width: $this->maxSize);
 			}
 		} else { // portrait
 			if ($this->maxHeight) {
 				return $image->scaleDown(height: $this->maxHeight);
-			} elseif ($this->maxSize) {
-				return $image->scaleDown(height: $this->maxSize);
 			}
 		}
 		
