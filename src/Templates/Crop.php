@@ -100,14 +100,14 @@ class Crop implements ModifierInterface
 	 */
 	protected function cropImage(ImageInterface $image): ImageInterface
 	{
-		// Parse coordinates in x,y,width,height format
-		list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
+		// Parse coordinates in width,height,x,y format
+		list($cropWidth, $cropHeight, $cropX, $cropY) = explode(',', $this->coords);
 		
 		// Convert to integer values
-		$cropX = (int)$cropX;
-		$cropY = (int)$cropY;
 		$cropWidth = (int)$cropWidth;
 		$cropHeight = (int)$cropHeight;
+		$cropX = (int)$cropX;
+		$cropY = (int)$cropY;
 		
 		// Ensure crop dimensions are valid
 		if ($cropWidth <= 0) $cropWidth = 1;

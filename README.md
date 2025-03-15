@@ -221,13 +221,13 @@ Where:
 - `maxSize`: (Optional) Maximum size for the output image
 - `maxWidth`: (Optional) Maximum width for the output image
 - `maxHeight`: (Optional) Maximum height for the output image
-- `coords`: (Optional) Comma-separated string in the format `x,y,width,height` for cropping
+- `coords`: (Optional) Comma-separated string in the format `width,height,x,y` for cropping
 - `ratio`: (Optional) Aspect ratio in the format `width x height` (e.g., '16x9')
 
 **Important notes about inputs:**
 - Filenames must contain only alphanumeric characters, underscores, hyphens, slashes, and dots
 - File extensions must be one of: jpg, jpeg, png, gif, webp
-- Coordinates must be in the format `x,y,width,height` with all values being positive integers
+- Coordinates must be in the format `width,height,x,y` with all values being positive integers
 - Ratio must be in the format `width x height` with both values being positive integers
 - Maximum dimensions must be positive integers and within the configured limits
 
@@ -305,7 +305,7 @@ try {
     $path = ImageCache::getCachedImage('crop', 'image.jpg', [
         'maxWidth' => 800,
         'maxHeight' => 600,
-        'coords' => '100,150,200,300',  // Format: x,y,width,height
+        'coords' => '200,300,100,150',  // Format: width,height,x,y
         'ratio' => '16x9'
     ]);
     

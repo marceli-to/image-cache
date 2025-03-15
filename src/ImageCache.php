@@ -48,30 +48,13 @@ class ImageCache
             $this->validateFilename($filename);
             $this->validateTemplate($template);
 
-            // Log the request parameters for debugging
-            Log::debug("Getting cached image", [
-                'template' => $template,
-                'filename' => $filename,
-                'params' => $params
-            ]);
-
             // Get the cached image path
             $cachedImagePath = $this->getCachedImagePath($template, $filename, $params);
-            
-            // Log the cache path for debugging
-            Log::debug("Cache path: {$cachedImagePath}");
             
             // Check if the cached image exists
             $cacheExists = File::exists($cachedImagePath);
             $cacheAge = $cacheExists ? (time() - File::lastModified($cachedImagePath)) : null;
             $cacheValid = $cacheExists && ($cacheAge < $this->lifetime * 60);
-            
-            Log::debug("Cache status", [
-                'exists' => $cacheExists,
-                'age' => $cacheAge,
-                'lifetime' => $this->lifetime * 60,
-                'valid' => $cacheValid
-            ]);
             
             if ($cacheValid) {
                 return $cachedImagePath;
@@ -83,9 +66,7 @@ class ImageCache
                 Log::warning("Original image not found: {$filename}");
                 return null;
             }
-            
-            Log::debug("Original image found: {$originalImagePath}");
-            
+                        
             // Create the cached image
             return $this->createCachedImage($originalImagePath, $cachedImagePath, $template, $params);
         } catch (Exception $e) {
@@ -116,13 +97,6 @@ class ImageCache
             if (class_exists($templateClass)) {
                 // For crop template, pass all parameters
                 if ($template === 'crop') {
-                    Log::debug("Applying crop template with parameters", [
-                        'maxSize' => $params['maxSize'] ?? null,
-                        'maxWidth' => $params['maxWidth'] ?? null,
-                        'maxHeight' => $params['maxHeight'] ?? null,
-                        'coords' => $params['coords'] ?? null,
-                        'ratio' => $params['ratio'] ?? null
-                    ]);
                     
                     $filter = new $templateClass(
                         $params['maxSize'] ?? null,

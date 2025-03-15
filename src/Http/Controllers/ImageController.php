@@ -473,13 +473,10 @@ class ImageController extends Controller
             return null;
         }
 
-        // Check if the coordinates are in the correct format (x,y,width,height)
+        // Check if the coordinates are in the correct format (width,height,x,y)
         if (!preg_match('/^\d+,\d+,\d+,\d+$/', $coords)) {
-            throw new InvalidArgumentException("Invalid coordinates format. Expected format: x,y,width,height");
+            throw new InvalidArgumentException("Invalid coordinates format. Expected format: width,height,x,y");
         }
-
-        // Parse coordinates
-        list($x, $y, $width, $height) = explode(',', $coords);
         
         return $coords;
     }
