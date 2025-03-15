@@ -404,7 +404,7 @@ class ImageCache
         }
 
         // Check if the template exists in the configuration
-        $templates = config('image-cache.templates', []);
+        $templates = array_keys(config('image-cache.templates', []));
         if (!in_array($template, $templates)) {
             throw new InvalidArgumentException("Template not found in configuration: {$template}");
         }
