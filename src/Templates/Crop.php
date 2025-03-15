@@ -76,15 +76,37 @@ class Crop implements ModifierInterface
 			// Parse coordinates in x,y,width,height format
 			list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
 			
+			// Convert to float values
+			$cropX = (float)$cropX;
+			$cropY = (float)$cropY;
+			$cropWidth = (float)$cropWidth;
+			$cropHeight = (float)$cropHeight;
+			
+			// Validate crop dimensions - ensure they're positive values
+			if ($cropWidth <= 0) {
+				$cropWidth = 1; // Set a minimum width of 1 pixel
+			}
+			if ($cropHeight <= 0) {
+				$cropHeight = 1; // Set a minimum height of 1 pixel
+			}
+			
+			// Ensure crop area is within image boundaries
+			if ($cropX + $cropWidth > $width) {
+				$cropWidth = $width - $cropX;
+			}
+			if ($cropY + $cropHeight > $height) {
+				$cropHeight = $height - $cropY;
+			}
+			
 			// Update orientation based on crop dimensions
-			$this->orientation = (float)$cropHeight > (float)$cropWidth ? 'portrait' : 'landscape';
+			$this->orientation = $cropHeight > $cropWidth ? 'portrait' : 'landscape';
 			
 			// Crop the image
 			$image = $image->crop(
-				floor((float)$cropWidth), 
-				floor((float)$cropHeight), 
-				floor((float)$cropX), 
-				floor((float)$cropY)
+				floor($cropWidth), 
+				floor($cropHeight), 
+				floor($cropX), 
+				floor($cropY)
 			);
 		}
 

@@ -116,6 +116,14 @@ class ImageCache
             if (class_exists($templateClass)) {
                 // For crop template, pass all parameters
                 if ($template === 'crop') {
+                    Log::debug("Applying crop template with parameters", [
+                        'maxSize' => $params['maxSize'] ?? null,
+                        'maxWidth' => $params['maxWidth'] ?? null,
+                        'maxHeight' => $params['maxHeight'] ?? null,
+                        'coords' => $params['coords'] ?? null,
+                        'ratio' => $params['ratio'] ?? null
+                    ]);
+                    
                     $filter = new $templateClass(
                         $params['maxSize'] ?? null,
                         $params['maxWidth'] ?? null,
