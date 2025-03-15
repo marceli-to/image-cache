@@ -49,7 +49,7 @@ class ImageCache
             $this->validateTemplate($template);
 
             // Get the cached image path
-            $cachedImagePath = $this->getCachedImagePath($template, $filename);
+            $cachedImagePath = $this->getCachedImagePath($template, $filename, $params);
             
             // Check if the cached image exists
             if (File::exists($cachedImagePath) && (time() - File::lastModified($cachedImagePath) < $this->lifetime * 60)) {
@@ -177,16 +177,25 @@ class ImageCache
     /**
      * Clear all cached images
      *
-     * @return bool
+     * @return bool True if successful, false otherwise
+     * @throws RuntimeException When clearing the cache fails
      */
     public function clearAllCache(): bool
     {
         try {
             if (File::exists($this->cachePath)) {
-                $files = File::allFiles($this->cachePath);
-                foreach ($files as $file) {
-                    File::delete($file->getPathname());
+                // Get all subdirectories (templates)
+                $directories = File::directories($this->cachePath);
+                
+                // Delete each template directory and its contents
+                foreach ($directories as $directory) {
+                    File::deleteDirectory($directory);
+                    
+                    // Recreate the empty directory
+                    $templateName = basename($directory);
+                    File::makeDirectory($this->cachePath . '/' . $templateName, 0755, true);
                 }
+                
                 return true;
             }
             return false;
@@ -232,10 +241,11 @@ class ImageCache
     }
 
     /**
-     * Clear cached images for a specific template
+     * Clear the cache for a specific template
      *
-     * @param string $template
-     * @return bool
+     * @param string $template The template name
+     * @return bool True if successful, false otherwise
+     * @throws RuntimeException When clearing the cache fails
      */
     public function clearTemplateCache(string $template): bool
     {
@@ -243,14 +253,16 @@ class ImageCache
             // Validate template
             $this->validateTemplate($template);
 
-            if (File::exists($this->cachePath)) {
-                $files = File::allFiles($this->cachePath);
-                foreach ($files as $file) {
-                    $filename = $file->getFilename();
-                    if (strpos($filename, $template . '_') === 0) {
-                        File::delete($file->getPathname());
-                    }
-                }
+            // Get the template directory
+            $templateDir = $this->cachePath . '/' . $template;
+            
+            if (File::exists($templateDir)) {
+                // Delete the entire template directory and its contents
+                File::deleteDirectory($templateDir);
+                
+                // Recreate the empty directory
+                File::makeDirectory($templateDir, 0755, true);
+                
                 return true;
             }
             return false;
@@ -311,15 +323,45 @@ class ImageCache
     }
 
     /**
-     * Get the cached image path
+     * Get the path to the cached image
      *
      * @param string $template The template name
      * @param string $filename The filename
+     * @param array $params Additional parameters
      * @return string The path to the cached image
      */
-    protected function getCachedImagePath(string $template, string $filename): string
+    protected function getCachedImagePath(string $template, string $filename, array $params = []): string
     {
-        return $this->cachePath . '/' . $template . '/' . $filename;
+        // Base path with template and filename
+        $basePath = $this->cachePath . '/' . $template;
+        
+        // For crop template, include parameters in the path
+        if ($template === 'crop') {
+            // Add maxSize parameter if provided
+            if (isset($params['maxSize'])) {
+                $basePath .= '/size_' . $params['maxSize'];
+            }
+            
+            // Add coords parameter if provided
+            if (isset($params['coords'])) {
+                $basePath .= '/coords_' . $params['coords'];
+            }
+            
+            // Add ratio parameter if provided
+            if (isset($params['ratio'])) {
+                $basePath .= '/ratio_' . str_replace([':', 'x'], '_', $params['ratio']);
+            }
+        }
+        
+        // For other templates with specific parameters, we could add similar logic here
+        
+        // Ensure the directory exists
+        if (!File::exists($basePath)) {
+            File::makeDirectory($basePath, 0755, true);
+        }
+        
+        // Return the full path including filename
+        return $basePath . '/' . $filename;
     }
 
     /**
