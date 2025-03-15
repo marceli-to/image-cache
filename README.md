@@ -1,4 +1,4 @@
-# Intervention Image Cache
+# Image Cache
 
 A simple image caching package for Laravel using Intervention Image v3.
 
@@ -7,7 +7,7 @@ A simple image caching package for Laravel using Intervention Image v3.
 You can install the package via composer:
 
 ```bash
-composer require marceli-to/intervention-image-cache
+composer require marceli-to/image-cache
 ```
 
 ## Intervention Image v3 Compatibility
