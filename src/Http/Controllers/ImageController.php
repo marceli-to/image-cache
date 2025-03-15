@@ -51,7 +51,7 @@ class ImageController extends Controller
                     'template' => $template,
                     'filename' => $filename
                 ]);
-                return response()->make('Image not found', 404);
+                abort(404, 'Image not found');
             }
 
             // Get the file contents and mime type
@@ -71,14 +71,17 @@ class ImageController extends Controller
                 'filename' => $filename ?? 'unknown',
                 'exception' => $e
             ]);
-            return response()->make('Invalid input: ' . $e->getMessage(), 400);
+            abort(400, 'Invalid input: ' . $e->getMessage());
         } catch (Exception $e) {
             Log::error("Error generating image response: {$e->getMessage()}", [
                 'template' => $template ?? 'unknown',
                 'filename' => $filename ?? 'unknown',
                 'exception' => $e
             ]);
-            return response()->make('Server error', 500);
+            
+            // In debug mode, Laravel will show the exception details
+            // In production, it will show a generic error page
+            abort(500, $e->getMessage());
         }
     }
 
@@ -119,7 +122,7 @@ class ImageController extends Controller
                     'coords' => $coords,
                     'ratio' => $ratio
                 ]);
-                return response()->make('Image not found', 404);
+                abort(404, 'Image not found');
             }
 
             // Get the file contents and mime type
@@ -141,7 +144,7 @@ class ImageController extends Controller
                 'ratio' => $ratio,
                 'exception' => $e
             ]);
-            return response()->make('Invalid input: ' . $e->getMessage(), 400);
+            abort(400, 'Invalid input: ' . $e->getMessage());
         } catch (Exception $e) {
             Log::error("Error generating crop image response: {$e->getMessage()}", [
                 'filename' => $filename ?? 'unknown',
@@ -150,7 +153,10 @@ class ImageController extends Controller
                 'ratio' => $ratio,
                 'exception' => $e
             ]);
-            return response()->make('Server error', 500);
+            
+            // In debug mode, Laravel will show the exception details
+            // In production, it will show a generic error page
+            abort(500, $e->getMessage());
         }
     }
 
@@ -196,7 +202,7 @@ class ImageController extends Controller
                     'coords' => $coords,
                     'ratio' => $ratio
                 ]);
-                return response()->make('Image not found', 404);
+                abort(404, 'Image not found');
             }
 
             // Get the file contents and mime type
@@ -219,7 +225,7 @@ class ImageController extends Controller
                 'ratio' => $ratio,
                 'exception' => $e
             ]);
-            return response()->make('Invalid input: ' . $e->getMessage(), 400);
+            abort(400, 'Invalid input: ' . $e->getMessage());
         } catch (Exception $e) {
             Log::error("Error generating crop image with dimensions response: {$e->getMessage()}", [
                 'filename' => $filename ?? 'unknown',
@@ -229,7 +235,10 @@ class ImageController extends Controller
                 'ratio' => $ratio,
                 'exception' => $e
             ]);
-            return response()->make('Server error', 500);
+            
+            // In debug mode, Laravel will show the exception details
+            // In production, it will show a generic error page
+            abort(500, $e->getMessage());
         }
     }
 
