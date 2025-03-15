@@ -54,18 +54,7 @@ class Crop implements ModifierInterface
 		$this->maxWidth = $maxWidth ?? $this->maxWidth;
 		$this->maxHeight = $maxHeight ?? $this->maxHeight;
 		$this->coords = $coords;
-		
-		// Validate ratio format if provided
-		if ($ratio) {
-			// Check if ratio is in a valid format
-			if (preg_match('/^(\d+)[:\/x](\d+)$/', $ratio)) {
-				$this->ratio = $ratio;
-			} else {
-				Log::warning("Invalid ratio format provided: {$ratio}. Expected format: width:height, width/height, or widthxheight");
-				// Still set the ratio, we'll validate it again when using it
-				$this->ratio = $ratio;
-			}
-		}
+    $this->ratio = $ratio;
 	}
 
 	/**
