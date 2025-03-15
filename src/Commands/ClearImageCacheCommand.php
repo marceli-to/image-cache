@@ -32,7 +32,7 @@ class ClearImageCacheCommand extends Command
 			$result = $imageCache->clearTemplateCache($template);
 			$this->info("Image cache for template '{$template}' cleared successfully.");
 		} else {
-			$result = $imageCache->clearCache();
+			$result = $imageCache->clearAllCache();
 			$this->info('All image cache cleared successfully.');
 		}
 
