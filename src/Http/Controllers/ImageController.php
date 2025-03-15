@@ -102,7 +102,7 @@ class ImageController extends Controller
             $this->validateFilename($filename);
             $this->validateMaxSize($maxSize);
             $coords = $this->validateCoords($coords);
-            $this->validateRatio($ratio);
+            $ratio = $this->validateRatio($ratio);
 
             // Convert maxSize to integer if provided
             $maxSizeInt = $maxSize !== null ? (int) $maxSize : null;
@@ -179,7 +179,7 @@ class ImageController extends Controller
             $this->validateMaxDimension($maxWidth, 'maxWidth');
             $this->validateMaxDimension($maxHeight, 'maxHeight');
             $coords = $this->validateCoords($coords);
-            $this->validateRatio($ratio);
+            $ratio = $this->validateRatio($ratio);
 
             // Convert dimensions to integers if provided
             $maxWidthInt = $maxWidth !== null ? (int) $maxWidth : null;
@@ -485,22 +485,32 @@ class ImageController extends Controller
      * Validate the ratio.
      *
      * @param string|null $ratio The ratio to validate
-     * @return bool True if the ratio is valid
+     * @return string|null The validated ratio
      * @throws InvalidArgumentException When ratio is invalid
      */
-    protected function validateRatio(?string $ratio): bool
+    protected function validateRatio(?string $ratio): ?string
     {
         // If ratio is null, it's valid
         if ($ratio === null) {
-            return true;
+            return null;
         }
 
-        // Check if ratio matches the expected format (width x height)
-        // Support both 'x' and ':' as separators for backward compatibility
-        if (!preg_match('/^\d+[x:]\d+$/', $ratio)) {
-            throw new InvalidArgumentException("Ratio must be in format: width x height");
+        // Check if ratio matches the expected format (width:height, width/height, or widthxheight)
+        // Support all common separators: ':', '/', and 'x'
+        if (!preg_match('/^(\d+)[:\/x](\d+)$/', $ratio, $matches)) {
+            throw new InvalidArgumentException("Ratio must be in format: width:height, width/height, or widthxheight");
         }
 
-        return true;
+        // Extract width and height from the matches
+        $width = (int)$matches[1];
+        $height = (int)$matches[2];
+
+        // Ensure both width and height are greater than zero
+        if ($width <= 0 || $height <= 0) {
+            throw new InvalidArgumentException("Ratio dimensions must be greater than zero");
+        }
+
+        // Return the validated ratio
+        return $ratio;
     }
 }
