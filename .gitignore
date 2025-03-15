@@ -1,0 +1,32 @@
+# Composer
+/vendor
+composer.lock
+
+# PHPUnit
+/phpunit.xml.dist
+/.phpunit.result.cache
+/coverage
+
+# IDE & OS specific
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Environment files
+.env
+.env.backup
+
+# Package specific
+/public/storage/cache
+/storage/cache
+/tests/fixtures/images/*.jpg
+/tests/fixtures/images/*.png
+/tests/fixtures/images/*.gif
+!/tests/fixtures/images/.gitkeep
+
+# Inputs folder (containing specs and other documentation)
+/inputs

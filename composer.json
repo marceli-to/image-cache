@@ -1,0 +1,47 @@
+{
+	"name": "marceli-to/image-cache",
+	"description": "A simple image caching package for Intervention Image v3",
+	"type": "library",
+	"license": "MIT",
+	"autoload": {
+		"psr-4": {
+			"MarceliTo\\ImageCache\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"MarceliTo\\ImageCache\\Tests\\": "tests/"
+		}
+	},
+	"authors": [
+		{
+			"name": "marceli.to",
+			"email": "your-email@example.com"
+		}
+	],
+	"minimum-stability": "stable",
+	"require": {
+		"php": "^8.1",
+		"intervention/image": "^3.0",
+		"illuminate/support": "^10.0|^11.0",
+		"illuminate/filesystem": "^10.0|^11.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^10.0",
+		"orchestra/testbench": "^8.0|^9.0"
+	},
+	"scripts": {
+		"test": "vendor/bin/phpunit",
+		"test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"MarceliTo\\ImageCache\\ImageCacheServiceProvider"
+			],
+			"aliases": {
+				"ImageCache": "MarceliTo\\ImageCache\\Facades\\ImageCache"
+			}
+		}
+	}
+}
