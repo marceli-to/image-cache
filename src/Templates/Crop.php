@@ -68,11 +68,6 @@ class Crop implements ModifierInterface
 		// Get image dimensions and determine orientation
 		$this->updateOrientation($image);
 		
-		// Log the coordinates for debugging
-		Log::debug("Crop template apply method called with coordinates", [
-			'coords' => $this->coords
-		]);
-		
 		// First crop the image if coordinates are provided
 		if ($this->coords && $this->coords != '0,0,0,0') {
 			$image = $this->cropImage($image);
@@ -105,9 +100,6 @@ class Crop implements ModifierInterface
 	 */
 	protected function cropImage(ImageInterface $image): ImageInterface
 	{
-		// This method should only be called when coordinates are valid
-		// But we'll keep a check just in case
-		
 		// Parse coordinates in x,y,width,height format
 		list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
 		
@@ -127,14 +119,6 @@ class Crop implements ModifierInterface
 		
 		if ($cropX + $cropWidth > $width) $cropWidth = $width - $cropX;
 		if ($cropY + $cropHeight > $height) $cropHeight = $height - $cropY;
-		
-		// Log the coordinates for debugging
-		Log::debug("Cropping image with coordinates", [
-			'x' => $cropX,
-			'y' => $cropY,
-			'width' => $cropWidth,
-			'height' => $cropHeight
-		]);
 		
 		// Crop the image
 		try {
