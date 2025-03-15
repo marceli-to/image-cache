@@ -4,10 +4,84 @@ A simple image caching package for Laravel using Intervention Image v3.
 
 ## Installation
 
+### Prerequisites
+
+- PHP 8.1 or higher
+- Laravel 10.x or 11.x
+- Composer
+
+### Basic Installation
+
 You can install the package via composer:
 
 ```bash
 composer require marceli-to/image-cache
+```
+
+### Post-Installation Setup
+
+1. **Publish the configuration file**:
+
+```bash
+php artisan vendor:publish --tag=image-cache-config
+```
+
+This will create a `config/image-cache.php` file where you can configure:
+
+- Cache path
+- Cache lifetime
+- Image search paths
+- Available templates
+- Route configuration
+
+2. **Configure your filesystem**:
+
+Ensure your Laravel filesystem is properly configured for storing cached images. By default, this package uses the `public` disk. Update your `.env` file and `config/filesystems.php` as needed:
+
+```php
+// config/filesystems.php
+'disks' => [
+    // ...
+    'public' => [
+        'driver' => 'local',
+        'root' => storage_path('app/public'),
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+    ],
+    // ...
+],
+```
+
+Then create the symbolic link to make the storage publicly accessible:
+
+```bash
+php artisan storage:link
+```
+
+3. **Service Provider Registration**:
+
+The package uses Laravel's auto-discovery feature to register the service provider and facade automatically. If you have disabled auto-discovery, add the following to your `config/app.php`:
+
+```php
+// config/app.php
+'providers' => [
+    // ...
+    MarceliTo\ImageCache\ImageCacheServiceProvider::class,
+],
+
+'aliases' => [
+    // ...
+    'ImageCache' => MarceliTo\ImageCache\Facades\ImageCache::class,
+],
+```
+
+4. **Create cache directory**:
+
+The package will attempt to create the cache directory automatically, but you may need to ensure proper permissions:
+
+```bash
+mkdir -p storage/app/public/cache/images
+chmod -R 775 storage/app/public/cache
 ```
 
 ## Intervention Image v3 Compatibility
