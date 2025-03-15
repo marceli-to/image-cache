@@ -50,6 +50,11 @@ class ImageCacheServiceProvider extends ServiceProvider
 	protected function registerRoutes(): void
 	{
 		Route::group($this->routeConfiguration(), function () {
+			// Original image route (no caching or manipulation)
+			Route::get('/img/original/{filename}', 
+				[\MarceliTo\ImageCache\Http\Controllers\ImageController::class, 'getOriginalResponse'])
+				->name('image-cache.original');
+				
 			// Standard template routes
 			Route::get('/img/{template}/{filename}', 
 				[\MarceliTo\ImageCache\Http\Controllers\ImageController::class, 'getResponse'])

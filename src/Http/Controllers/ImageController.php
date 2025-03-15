@@ -243,6 +243,78 @@ class ImageController extends Controller
     }
 
     /**
+     * Get the original image response without caching or manipulation.
+     *
+     * @param Request $request The request instance
+     * @param string $filename The filename
+     * @return Response The response
+     */
+    public function getOriginalResponse(Request $request, string $filename): Response
+    {
+        try {
+            // Validate the filename
+            $this->validateFilename($filename);
+            
+            // Find the original image
+            $originalImagePath = $this->findOriginalImage($filename);
+            
+            // If the original image doesn't exist, return a 404 response
+            if (!$originalImagePath) {
+                Log::warning("Original image not found", [
+                    'filename' => $filename
+                ]);
+                abort(404, 'Image not found');
+            }
+            
+            // Get the file contents and mime type
+            $fileContents = File::get($originalImagePath);
+            $mimeType = $this->getMimeType($originalImagePath);
+            
+            // Return the response
+            return response()->make($fileContents, 200, [
+                'Content-Type' => $mimeType,
+                'Content-Length' => File::size($originalImagePath),
+                'Cache-Control' => 'max-age=' . config('image-cache.browser_cache_time', 3600) . ', public',
+                'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + config('image-cache.browser_cache_time', 3600))
+            ]);
+        } catch (InvalidArgumentException $e) {
+            Log::warning("Invalid input for original image response: {$e->getMessage()}", [
+                'filename' => $filename ?? 'unknown',
+                'exception' => $e
+            ]);
+            abort(400, 'Invalid input: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error("Error generating original image response: {$e->getMessage()}", [
+                'filename' => $filename ?? 'unknown',
+                'exception' => $e
+            ]);
+            abort(500, 'Server error');
+        }
+    }
+    
+    /**
+     * Find the original image in the configured paths.
+     *
+     * @param string $filename The filename to find
+     * @return string|null The path to the original image or null if not found
+     */
+    protected function findOriginalImage(string $filename): ?string
+    {
+        // Get the configured paths to search for original images
+        $paths = config('image-cache.paths', []);
+        
+        // Search for the image in each path
+        foreach ($paths as $path) {
+            $imagePath = $path . '/' . $filename;
+            if (File::exists($imagePath)) {
+                return $imagePath;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Get the mime type of a file.
      *
      * @param string $path The file path
