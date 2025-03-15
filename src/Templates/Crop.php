@@ -65,59 +65,100 @@ class Crop implements ModifierInterface
 	 */
 	public function apply(ImageInterface $image): ImageInterface
 	{
-		// Get image dimensions
+		// Get image dimensions and determine orientation
+		$this->updateOrientation($image);
+		
+		// First crop the image if coordinates are provided
+		if ($this->coords && $this->coords != '0,0,0,0') {
+			$image = $this->cropImage($image);
+		}
+		
+		// Then scale the image based on max dimensions
+		$image = $this->scaleImage($image);
+		
+		return $image;
+	}
+	
+	/**
+	 * Update the orientation property based on image dimensions
+	 *
+	 * @param ImageInterface $image The image to check
+	 */
+	protected function updateOrientation(ImageInterface $image): void
+	{
 		$width = $image->width();
 		$height = $image->height();
-
-		// Determine orientation
+		
 		$this->orientation = $height > $width ? 'portrait' : 'landscape';
-
-		// If coordinates are provided, crop the image
-		if ($this->coords && $this->coords != '0,0,0,0') {
-			// Parse coordinates in x,y,width,height format
-			list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
+	}
+	
+	/**
+	 * Crop the image based on coordinates
+	 *
+	 * @param ImageInterface $image The image to crop
+	 * @return ImageInterface The cropped image
+	 */
+	protected function cropImage(ImageInterface $image): ImageInterface
+	{
+		// This method should only be called when coordinates are valid
+		// But we'll keep a check just in case
+		
+		// Parse coordinates in x,y,width,height format
+		list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
+		
+		// Convert to integer values
+		$cropX = (int)$cropX;
+		$cropY = (int)$cropY;
+		$cropWidth = (int)$cropWidth;
+		$cropHeight = (int)$cropHeight;
+		
+		// Ensure crop dimensions are valid
+		if ($cropWidth <= 0) $cropWidth = 1;
+		if ($cropHeight <= 0) $cropHeight = 1;
+		
+		// Ensure crop area is within image boundaries
+		$width = $image->width();
+		$height = $image->height();
+		
+		if ($cropX + $cropWidth > $width) $cropWidth = $width - $cropX;
+		if ($cropY + $cropHeight > $height) $cropHeight = $height - $cropY;
+		
+		// Log the coordinates for debugging
+		Log::debug("Cropping image with coordinates", [
+			'x' => $cropX,
+			'y' => $cropY,
+			'width' => $cropWidth,
+			'height' => $cropHeight
+		]);
+		
+		// Crop the image
+		try {
+			$image = $image->crop($cropWidth, $cropHeight, $cropX, $cropY);
 			
-			// Convert to integer values
-			$cropX = (int)$cropX;
-			$cropY = (int)$cropY;
-			$cropWidth = (int)$cropWidth;
-			$cropHeight = (int)$cropHeight;
-			
-			// Ensure crop dimensions are valid
-			if ($cropWidth <= 0) $cropWidth = 1;
-			if ($cropHeight <= 0) $cropHeight = 1;
-			
-			// Ensure crop area is within image boundaries
-			if ($cropX + $cropWidth > $width) $cropWidth = $width - $cropX;
-			if ($cropY + $cropHeight > $height) $cropHeight = $height - $cropY;
-			
-			// Log the coordinates for debugging
-			Log::debug("Cropping image with coordinates", [
+			// Update orientation based on the cropped image
+			$this->updateOrientation($image);
+		} catch (\Exception $e) {
+			Log::error("Error during crop operation: " . $e->getMessage(), [
 				'x' => $cropX,
 				'y' => $cropY,
 				'width' => $cropWidth,
-				'height' => $cropHeight
+				'height' => $cropHeight,
+				'exception' => $e
 			]);
-			
-			// Crop the image
-			try {
-				$image = $image->crop($cropWidth, $cropHeight, $cropX, $cropY);
-				
-				// Update orientation based on the cropped image
-				$this->orientation = $image->height() > $image->width() ? 'portrait' : 'landscape';
-			} catch (\Exception $e) {
-				Log::error("Error during crop operation: " . $e->getMessage(), [
-					'x' => $cropX,
-					'y' => $cropY,
-					'width' => $cropWidth,
-					'height' => $cropHeight,
-					'exception' => $e
-				]);
-				// Continue with the original image if cropping fails
-			}
+			// Continue with the original image if cropping fails
 		}
 		
-		// Scale down the image based on orientation and max dimensions
+		return $image;
+	}
+	
+	/**
+	 * Scale down the image based on orientation and max dimensions
+	 *
+	 * @param ImageInterface $image The image to scale
+	 * @return ImageInterface The scaled image
+	 */
+	protected function scaleImage(ImageInterface $image): ImageInterface
+	{
 		if ($this->orientation === 'landscape') {
 			if ($this->maxWidth) {
 				return $image->scaleDown(width: $this->maxWidth);
