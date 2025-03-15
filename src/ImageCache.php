@@ -332,28 +332,22 @@ class ImageCache
      */
     protected function getCachedImagePath(string $template, string $filename, array $params = []): string
     {
-        // Base path with template and filename
+        // Base path with template
         $basePath = $this->cachePath . '/' . $template;
         
-        // For crop template, include parameters in the path
-        if ($template === 'crop') {
-            // Add maxSize parameter if provided
-            if (isset($params['maxSize'])) {
-                $basePath .= '/size_' . $params['maxSize'];
-            }
+        // For crop template or any template with parameters, create a hash-based subdirectory
+        if (!empty($params)) {
+            // Create a hash of the parameters to use as a directory name
+            // This ensures unique directories for different parameter combinations
+            // while avoiding problematic directory names with special characters
+            $paramHash = md5(json_encode($params));
             
-            // Add coords parameter if provided
-            if (isset($params['coords'])) {
-                $basePath .= '/coords_' . $params['coords'];
-            }
+            // Use the first 2 characters as a subdirectory for better file distribution
+            $basePath .= '/' . substr($paramHash, 0, 2);
             
-            // Add ratio parameter if provided
-            if (isset($params['ratio'])) {
-                $basePath .= '/ratio_' . str_replace([':', 'x'], '_', $params['ratio']);
-            }
+            // Use the rest of the hash as the final directory
+            $basePath .= '/' . substr($paramHash, 2);
         }
-        
-        // For other templates with specific parameters, we could add similar logic here
         
         // Ensure the directory exists
         if (!File::exists($basePath)) {
