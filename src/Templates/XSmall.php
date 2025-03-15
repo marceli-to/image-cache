@@ -10,7 +10,7 @@ class XSmall implements ModifierInterface
 	/**
 	 * Maximum size for the image
 	 */
-	protected $maxSize = 240;
+	protected $maxSize = 400;
 
 	/**
 	 * Apply filter to image

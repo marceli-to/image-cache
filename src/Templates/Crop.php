@@ -11,17 +11,17 @@ class Crop implements ModifierInterface
 	/**
 	 * Maximum size for the image
 	 */
-	protected ?int $maxSize = 1600;
+	protected ?int $maxSize = 2400;
 
 	/**
 	 * Maximum width for the image
 	 */
-	protected ?int $maxWidth = 1600;
+	protected ?int $maxWidth = 2400;
 
 	/**
 	 * Maximum height for the image
 	 */
-	protected ?int $maxHeight = 1200;
+	protected ?int $maxHeight = 1600;
 
 	/**
 	 * Coordinates for cropping (x,y,width,height)
