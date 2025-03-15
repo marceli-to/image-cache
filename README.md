@@ -117,13 +117,13 @@ The package automatically registers the necessary routes, so you can use it dire
 <img src="/img/thumbnail/image.jpg" alt="Image">
 
 <!-- With cropping using maxSize (single dimension) -->
-<img src="/img/crop/image.jpg/800/100,150,500,300" alt="Image">
+<img src="/img/crop/image.jpg/800/100,150,200,300" alt="Image">
 
 <!-- With cropping using width and height -->
-<img src="/img/crop/image.jpg/800/600/100,150,500,300" alt="Image">
+<img src="/img/crop/image.jpg/800/600/100,150,200,300" alt="Image">
 
 <!-- With aspect ratio -->
-<img src="/img/crop/image.jpg/800/600/100,150,500,300/16:9" alt="Image">
+<img src="/img/crop/image.jpg/800/600/100,150,200,300/16x9" alt="Image">
 ```
 
 The URL format for standard templates is:
@@ -147,14 +147,14 @@ Where:
 - `maxSize`: (Optional) Maximum size for the output image
 - `maxWidth`: (Optional) Maximum width for the output image
 - `maxHeight`: (Optional) Maximum height for the output image
-- `coords`: (Optional) Comma-separated string in the format `width,height,x,y` for cropping
-- `ratio`: (Optional) Aspect ratio in the format `width:height` (e.g., '16:9')
+- `coords`: (Optional) Comma-separated string in the format `x,y,width,height` for cropping
+- `ratio`: (Optional) Aspect ratio in the format `width x height` (e.g., '16x9')
 
 **Important notes about inputs:**
 - Filenames must contain only alphanumeric characters, underscores, hyphens, slashes, and dots
 - File extensions must be one of: jpg, jpeg, png, gif, webp
-- Coordinates must be in the format `width,height,x,y` with all values being positive integers
-- Ratio must be in the format `width:height` with both values being positive integers
+- Coordinates must be in the format `x,y,width,height` with all values being positive integers
+- Ratio must be in the format `width x height` with both values being positive integers
 - Maximum dimensions must be positive integers and within the configured limits
 
 ### Custom Controller
@@ -199,25 +199,14 @@ public function getResponse(Request $request, string $template, string $filename
         
         $path = ImageCache::getCachedImage($template, $filename, $params);
         
-        if (!$path || !File::exists($path)) {
+        if (!$path) {
             return response()->make('Image not found', 404);
         }
         
-        $fileContents = File::get($path);
-        $mimeType = $this->getMimeType($path);
-        
-        return response()->make($fileContents, 200, [
-            'Content-Type' => $mimeType,
-            'Content-Length' => File::size($path),
-            'Cache-Control' => 'max-age=' . config('image-cache.browser_cache_time', 3600) . ', public'
-        ]);
-    } catch (InvalidArgumentException $e) {
-        return response()->make('Invalid input: ' . $e->getMessage(), 400);
+        return response()->file($path);
     } catch (Exception $e) {
-        Log::error("Error generating image response: {$e->getMessage()}", [
-            'exception' => $e
-        ]);
-        return response()->make('Server error', 500);
+        // Handle errors
+        return response()->make('Error: ' . $e->getMessage(), 400);
     }
 }
 ```
@@ -242,8 +231,8 @@ try {
     $path = ImageCache::getCachedImage('crop', 'image.jpg', [
         'maxWidth' => 800,
         'maxHeight' => 600,
-        'coords' => '500,300,100,150',  // Format: width,height,x,y
-        'ratio' => '16:9'
+        'coords' => '100,150,200,300',  // Format: x,y,width,height
+        'ratio' => '16x9'
     ]);
     
     if (!$path) {

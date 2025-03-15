@@ -393,9 +393,9 @@ class ImageController extends Controller
             return true;
         }
 
-        // Check if coords match the expected format (width,height,x,y)
+        // Check if coords match the expected format (x,y,width,height)
         if (!preg_match('/^\d+,\d+,\d+,\d+$/', $coords)) {
-            throw new InvalidArgumentException("Coordinates must be in format: width,height,x,y");
+            throw new InvalidArgumentException("Coordinates must be in format: x,y,width,height");
         }
 
         return true;
@@ -415,9 +415,10 @@ class ImageController extends Controller
             return true;
         }
 
-        // Check if ratio matches the expected format (width:height)
-        if (!preg_match('/^\d+:\d+$/', $ratio)) {
-            throw new InvalidArgumentException("Ratio must be in format: width:height");
+        // Check if ratio matches the expected format (width x height)
+        // Support both 'x' and ':' as separators for backward compatibility
+        if (!preg_match('/^\d+[x:]\d+$/', $ratio)) {
+            throw new InvalidArgumentException("Ratio must be in format: width x height");
         }
 
         return true;

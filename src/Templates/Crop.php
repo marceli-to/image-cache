@@ -43,8 +43,8 @@ class Crop implements ModifierInterface
 	 * @param int|null $maxSize Maximum size for the image
 	 * @param int|null $maxWidth Maximum width for the image
 	 * @param int|null $maxHeight Maximum height for the image
-	 * @param string|null $coords Coordinates for cropping (width,height,x,y)
-	 * @param string|null $ratio Aspect ratio
+	 * @param string|null $coords Coordinates for cropping (x,y,width,height)
+	 * @param string|null $ratio Aspect ratio (width x height)
 	 */
 	public function __construct(?int $maxSize = null, ?int $maxWidth = null, ?int $maxHeight = null, ?string $coords = null, ?string $ratio = null)
 	{
@@ -73,7 +73,8 @@ class Crop implements ModifierInterface
 
 		// If coordinates are provided, crop the image
 		if ($this->coords && $this->coords != '0,0,0,0') {
-			list($cropWidth, $cropHeight, $cropX, $cropY) = explode(',', $this->coords);
+			// Parse coordinates in x,y,width,height format
+			list($cropX, $cropY, $cropWidth, $cropHeight) = explode(',', $this->coords);
 			
 			// Update orientation based on crop dimensions
 			$this->orientation = (float)$cropHeight > (float)$cropWidth ? 'portrait' : 'landscape';
@@ -89,8 +90,10 @@ class Crop implements ModifierInterface
 
 		// If ratio is provided, adjust the image dimensions
 		if ($this->ratio) {
-			// Parse the ratio (format: width:height)
-			list($ratioWidth, $ratioHeight) = explode(':', $this->ratio);
+			// Parse the ratio (format: width x height)
+			// Support both 'x' and ':' as separators for backward compatibility
+			$separator = strpos($this->ratio, 'x') !== false ? 'x' : ':';
+			list($ratioWidth, $ratioHeight) = explode($separator, $this->ratio);
 			$ratioWidth = (float) $ratioWidth;
 			$ratioHeight = (float) $ratioHeight;
 			

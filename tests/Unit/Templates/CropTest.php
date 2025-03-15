@@ -24,8 +24,8 @@ class CropTest extends TestCase
         // Create a test image (500x500 white square)
         $image = $this->imageManager->create(500, 500, 'fff');
         
-        // Create a crop template with coordinates (width,height,x,y)
-        $cropTemplate = new Crop(null, null, null, '200,200,100,100');
+        // Create a crop template with coordinates (x,y,width,height)
+        $cropTemplate = new Crop(null, null, null, '100,100,200,200');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -42,7 +42,7 @@ class CropTest extends TestCase
         $image = $this->imageManager->create(500, 500, 'fff');
         
         // Create a crop template with coordinates and max dimensions
-        $cropTemplate = new Crop(null, 100, 100, '200,200,100,100');
+        $cropTemplate = new Crop(null, 100, 100, '100,100,200,200');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -85,9 +85,9 @@ class CropTest extends TestCase
         // Create a test image (500x500 white square)
         $image = $this->imageManager->create(500, 500, 'fff');
         
-        // Create a crop template with coordinates (width,height,x,y)
+        // Create a crop template with coordinates (x,y,width,height)
         // This creates a 200x400 crop
-        $cropTemplate = new Crop(null, 100, null, '200,400,100,100');
+        $cropTemplate = new Crop(null, 100, null, '100,100,200,400');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -108,9 +108,9 @@ class CropTest extends TestCase
         // Create a test image (500x500 white square)
         $image = $this->imageManager->create(500, 500, 'fff');
         
-        // Create a crop template with coordinates (width,height,x,y) and both max dimensions
+        // Create a crop template with coordinates (x,y,width,height) and both max dimensions
         // The crop creates a 200x400 image with 1:2 aspect ratio
-        $cropTemplate = new Crop(null, 100, 300, '200,400,100,100');
+        $cropTemplate = new Crop(null, 100, 300, '100,100,200,400');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -133,7 +133,7 @@ class CropTest extends TestCase
         $image = $this->imageManager->create(500, 500, 'fff');
         
         // Create a crop template with coordinates and aspect ratio
-        $cropTemplate = new Crop(null, 200, 200, '200,200,100,100', '16:9');
+        $cropTemplate = new Crop(null, 200, 200, '100,100,200,200', '16:9');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -172,7 +172,7 @@ class CropTest extends TestCase
         $image = $this->imageManager->create(500, 500, 'fff');
         
         // Create a crop template with coordinates exceeding image dimensions
-        $cropTemplate = new Crop(null, null, null, '200,200,400,400');
+        $cropTemplate = new Crop(null, null, null, '400,400,200,200');
         
         // Apply the template
         $result = $cropTemplate->apply($image);
@@ -195,7 +195,7 @@ class CropTest extends TestCase
         $image = $this->imageManager->create(500, 500, 'fff');
         
         // Create a crop template with negative dimensions
-        $cropTemplate = new Crop(null, -100, -100, '200,200,100,100');
+        $cropTemplate = new Crop(null, -100, -100, '100,100,200,200');
     }
     
     /** @test */
@@ -210,6 +210,6 @@ class CropTest extends TestCase
         $image = $this->imageManager->create(500, 500, 'fff');
         
         // Create a crop template with invalid ratio format
-        $cropTemplate = new Crop(null, 100, 100, '200,200,100,100', 'invalid');
+        $cropTemplate = new Crop(null, 100, 100, '100,100,200,200', 'invalid');
     }
 }
