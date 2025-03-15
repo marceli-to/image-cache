@@ -5,8 +5,8 @@ namespace MarceliTo\ImageCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Interfaces\ImageInterface;
 use Intervention\Image\Interfaces\ModifierInterface;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +22,8 @@ class ImageCache
 
     public function __construct()
     {
-        $this->manager = new ImageManager(new Driver());
+        // Initialize with the GD driver using the correct v3 syntax
+        $this->manager = new ImageManager(new GdDriver());
         $this->cachePath = storage_path(config('image-cache.cache_path', 'app/public/cache'));
         $this->lifetime = config('image-cache.lifetime', 43200); // Default to 30 days if not set
         
@@ -288,7 +289,7 @@ class ImageCache
             }
             
             // Create the image manager
-            $manager = new ImageManager(config('image-cache.driver', 'gd'));
+            $manager = new ImageManager(new GdDriver());
             
             // Process the image
             $image = $manager->read($originalImagePath);
@@ -400,13 +401,13 @@ class ImageCache
 
         // Check if the template contains only allowed characters
         if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $template)) {
-            throw new InvalidArgumentException("Template contains invalid characters: {$template}");
+          throw new InvalidArgumentException("Template contains invalid characters: {$template}");
         }
 
         // Check if the template exists in the configuration
         $templates = array_keys(config('image-cache.templates', []));
         if (!in_array($template, $templates)) {
-            throw new InvalidArgumentException("Template not found in configuration: {$template}");
+          throw new InvalidArgumentException("Template not found in configuration: {$template}");
         }
 
         return true;
