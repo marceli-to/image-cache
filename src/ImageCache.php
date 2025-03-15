@@ -48,11 +48,32 @@ class ImageCache
             $this->validateFilename($filename);
             $this->validateTemplate($template);
 
+            // Log the request parameters for debugging
+            Log::debug("Getting cached image", [
+                'template' => $template,
+                'filename' => $filename,
+                'params' => $params
+            ]);
+
             // Get the cached image path
             $cachedImagePath = $this->getCachedImagePath($template, $filename, $params);
             
+            // Log the cache path for debugging
+            Log::debug("Cache path: {$cachedImagePath}");
+            
             // Check if the cached image exists
-            if (File::exists($cachedImagePath) && (time() - File::lastModified($cachedImagePath) < $this->lifetime * 60)) {
+            $cacheExists = File::exists($cachedImagePath);
+            $cacheAge = $cacheExists ? (time() - File::lastModified($cachedImagePath)) : null;
+            $cacheValid = $cacheExists && ($cacheAge < $this->lifetime * 60);
+            
+            Log::debug("Cache status", [
+                'exists' => $cacheExists,
+                'age' => $cacheAge,
+                'lifetime' => $this->lifetime * 60,
+                'valid' => $cacheValid
+            ]);
+            
+            if ($cacheValid) {
                 return $cachedImagePath;
             }
             
@@ -63,8 +84,10 @@ class ImageCache
                 return null;
             }
             
+            Log::debug("Original image found: {$originalImagePath}");
+            
             // Create the cached image
-            return $this->createCachedImage($originalImagePath, $cachedImagePath, $template);
+            return $this->createCachedImage($originalImagePath, $cachedImagePath, $template, $params);
         } catch (Exception $e) {
             Log::error("Error getting cached image: {$e->getMessage()}", [
                 'template' => $template,
@@ -281,10 +304,11 @@ class ImageCache
      * @param string $originalImagePath The path to the original image
      * @param string $cachedImagePath The path to the cached image
      * @param string $template The template name
+     * @param array $params Additional parameters
      * @return string|null The path to the cached image or null if creation failed
      * @throws RuntimeException When image processing fails
      */
-    protected function createCachedImage(string $originalImagePath, string $cachedImagePath, string $template): ?string
+    protected function createCachedImage(string $originalImagePath, string $cachedImagePath, string $template, array $params = []): ?string
     {
         try {
             // Create the directory if it doesn't exist
@@ -300,15 +324,11 @@ class ImageCache
                 return null;
             }
             
-            // Create the image manager
-            $manager = new ImageManager(new GdDriver());
+            // Apply the template
+            $modifiedImage = $this->applyTemplate($template, $originalImagePath, $params);
             
-            // Process the image
-            $image = $manager->read($originalImagePath);
-            $image = $image->modify($templateClass);
-            
-            // Save the image
-            $image->save($cachedImagePath);
+            // Save the modified image
+            $modifiedImage->save($cachedImagePath);
             
             return $cachedImagePath;
         } catch (Exception $e) {
@@ -316,6 +336,7 @@ class ImageCache
                 'originalImagePath' => $originalImagePath,
                 'cachedImagePath' => $cachedImagePath,
                 'template' => $template,
+                'params' => $params,
                 'exception' => $e
             ]);
             throw new RuntimeException("Failed to create cached image: {$e->getMessage()}", 0, $e);
