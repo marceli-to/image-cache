@@ -496,14 +496,14 @@ class ImageController extends Controller
         }
 
         // Check if ratio matches the expected format (width:height, width/height, or widthxheight)
-        // Support all common separators: ':', '/', and 'x'
-        if (!preg_match('/^(\d+)[:\/x](\d+)$/', $ratio, $matches)) {
+        // Support all common separators: ':', '/', and 'x' and allow decimal values
+        if (!preg_match('/^(\d+(?:\.\d+)?)[:/x](\d+(?:\.\d+)?)$/', $ratio, $matches)) {
             throw new InvalidArgumentException("Ratio must be in format: width:height, width/height, or widthxheight");
         }
 
         // Extract width and height from the matches
-        $width = (int)$matches[1];
-        $height = (int)$matches[2];
+        $width = (float)$matches[1];
+        $height = (float)$matches[2];
 
         // Ensure both width and height are greater than zero
         if ($width <= 0 || $height <= 0) {
